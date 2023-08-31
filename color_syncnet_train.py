@@ -35,7 +35,10 @@ syncnet_T = 5
 syncnet_mel_step_size = 16
 
 class Dataset(object):
+    split = ""
     def __init__(self, split):
+        print(f"Dataset init: {split}")
+        self.split = split
         self.all_videos = get_image_list(args.data_root, split)
 
     def get_frame_id(self, frame):
@@ -78,7 +81,7 @@ class Dataset(object):
             wrong_img_name = random.choice(img_names)
             while wrong_img_name == img_name:
                 wrong_img_name = random.choice(img_names)
-
+            
             if random.choice([True, False]):
                 y = torch.ones(1).float()
                 chosen = img_name
@@ -106,14 +109,11 @@ class Dataset(object):
                 window.append(img)
 
             if not all_read: continue
+            
+            wavpath = join(vidname, "audio.wav")
+            wav = audio.load_wav(wavpath, hparams.sample_rate)
 
-            try:
-                wavpath = join(vidname, "audio.wav")
-                wav = audio.load_wav(wavpath, hparams.sample_rate)
-
-                orig_mel = audio.melspectrogram(wav).T
-            except Exception as e:
-                continue
+            orig_mel = audio.melspectrogram(wav).T
 
             mel = self.crop_audio_window(orig_mel.copy(), img_name)
 
@@ -127,7 +127,6 @@ class Dataset(object):
 
             x = torch.FloatTensor(x)
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
-
             return x, mel, y
 
 logloss = nn.BCELoss()
@@ -255,11 +254,11 @@ if __name__ == "__main__":
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.syncnet_batch_size, shuffle=True,
-        num_workers=hparams.num_workers)
+        num_workers=4) #hparams.num_workers)
 
     test_data_loader = data_utils.DataLoader(
         test_dataset, batch_size=hparams.syncnet_batch_size,
-        num_workers=8)
+        num_workers=4)
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
