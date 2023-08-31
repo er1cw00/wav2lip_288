@@ -1,0 +1,10 @@
+__pycache__
+filelists
+checkpoints
+tiktok
+*.pth
+*.pyc
+*.jpg
+*.mp4
+*.wav
+
