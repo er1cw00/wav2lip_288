@@ -110,10 +110,8 @@ class Dataset(object):
 
             if not all_read: continue
             
-            wavpath = join(vidname, "audio.wav")
-            wav = audio.load_wav(wavpath, hparams.sample_rate)
-
-            orig_mel = audio.melspectrogram(wav).T
+            specpath = join(vidname, "spec.npy")
+            orig_mel = np.load(specpath)
 
             mel = self.crop_audio_window(orig_mel.copy(), img_name)
 
