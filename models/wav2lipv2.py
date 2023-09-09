@@ -8,7 +8,7 @@ from .conv2 import Conv2dTranspose, Conv2d, nonorm_Conv2d
 class Wav2Lip(nn.Module):
     def __init__(self):
         super(Wav2Lip, self).__init__()
-
+        print('using Wav2Lip_v2\n')
         self.face_encoder_blocks = nn.ModuleList([
             nn.Sequential(Conv2d(6, 16, kernel_size=7, stride=1, padding=3)), # 288, 288
             
