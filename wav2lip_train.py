@@ -253,8 +253,9 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                     if average_sync_loss < .75:
                         hparams.set_hparam('syncnet_wt', 0.01) # without image GAN a lesser weight is sufficient
 
-            prog_bar.set_description('L1: {}, Sync Loss: {}'.format(running_l1_loss / (step + 1),
-                                                                    running_sync_loss / (step + 1)))
+            prog_bar.set_description('Train Epoch:{}, L1: {}, Sync Loss: {}'.format(global_epoch,
+                                                                              running_l1_loss / (step + 1),
+                                                                              running_sync_loss / (step + 1)))
 
         global_epoch += 1
         
@@ -267,8 +268,9 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     while 1:
         for x, indiv_mels, mel, gt in test_data_loader:
             step += 1
+            print(f'eval model {step}')
             model.eval()
-
+            
             # Move data to CUDA device
             x = x.to(device)
             gt = gt.to(device)
@@ -287,7 +289,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
                 averaged_sync_loss = sum(sync_losses) / len(sync_losses)
                 averaged_recon_loss = sum(recon_losses) / len(recon_losses)
 
-                print('L1: {}, Sync loss: {}'.format(averaged_recon_loss, averaged_sync_loss))
+                print('Eval Epoch: {}, L1: {}, Sync loss: {}'.format(global_epoch, averaged_recon_loss, averaged_sync_loss))
 
                 return averaged_sync_loss
 
@@ -302,7 +304,7 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
         "global_step": step,
         "global_epoch": epoch,
     }, checkpoint_path)
-    print("Saved checkpoint:", checkpoint_path)
+    print("\nSaved checkpoint:", checkpoint_path)
 
 
 def _load(checkpoint_path):
@@ -348,7 +350,7 @@ if __name__ == "__main__":
 
     test_data_loader = data_utils.DataLoader(
         test_dataset, batch_size=hparams.batch_size,
-        num_workers=4)
+        num_workers=hparams.num_workers)
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
